@@ -1,0 +1,15 @@
+{
+  "name": "mesh-api",
+  "version": "1.0.0beta",
+  "description": "API for Mesh",
+  "main": "index.js",
+  "scripts": {
+    "babel-watch": "babel mesh-api.js -w -o mesh-api-es5.js"
+  },
+  "author": "Tanner Norton",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1"
+  }
+}
