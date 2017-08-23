@@ -19,7 +19,17 @@ var MeshPacketContent = function () {
         _classCallCheck(this, MeshPacketContent);
     }
 
-    _createClass(MeshPacketContent, null, [{
+    _createClass(MeshPacketContent, [{
+        key: 'handle',
+        value: function handle(obj) {
+            throw 'Default implementation is not supported';
+        }
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return JSON.stringify(this, null, 2);
+        }
+    }], [{
         key: 'registerPacket',
         value: function registerPacket(id, factoryCallback) {
             var size = Object.keys(_packets).length;
@@ -34,7 +44,7 @@ var MeshPacketContent = function () {
         value: function parse(json) {
             if (typeof json === 'string') json = JSON.parse(json);
 
-            if (json.hasOwnProperty('id') && _packets.hasOwnProperty(json.id)) return _packets[json.id]();
+            if (json.hasOwnProperty('id') && _packets.hasOwnProperty(json.id)) return _packets[json.id](json);
 
             return null;
         }
@@ -58,7 +68,14 @@ var FileDataChange = function (_MeshPacketContent) {
         return _this;
     }
 
-    _createClass(FileDataChange, null, [{
+    _createClass(FileDataChange, [{
+        key: 'handle',
+        value: function handle(str) {
+            if (this.length < 0) return str.substring(0, this.start + this.length);
+
+            return str.substring(0, this.start) + this.data + str.substring(this.start + this.data.length);
+        }
+    }], [{
         key: 'getID',
         value: function getID() {
             return 'FileDataChange';

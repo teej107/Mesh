@@ -19,10 +19,9 @@ class Mesh extends React.Component {
             socket.onclose = (event) => this.socket = this.newSocket()
         };
         socket.onmessage = (event) => {
-            if (typeof event.data === 'string')
-                this.setState({value: event.data});
-            else
-                return;
+            var data = MeshAPI.MeshPacketContent.parse(event.data);
+            if(data instanceof MeshAPI.MeshPacketContent)
+                this.setState({value: data.handle(this.state.value)});
         };
         return socket;
     }

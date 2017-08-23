@@ -22,9 +22,19 @@ class MeshPacketContent {
             json = JSON.parse(json);
 
         if (json.hasOwnProperty('id') && _packets.hasOwnProperty(json.id))
-            return _packets[json.id]();
+            return _packets[json.id](json);
 
         return null;
+    }
+
+    handle(obj)
+    {
+        throw 'Default implementation is not supported';
+    }
+
+    toString()
+    {
+        return JSON.stringify(this, null, 2);
     }
 }
 
@@ -37,6 +47,14 @@ class FileDataChange extends MeshPacketContent {
         this.start = start;
         this.data = data;
         this.length = length;
+    }
+
+    handle(str)
+    {
+        if (this.length < 0)
+            return str.substring(0, this.start + this.length);
+
+        return str.substring(0, this.start) + this.data + str.substring(this.start + this.data.length);
     }
 
     static getID()
