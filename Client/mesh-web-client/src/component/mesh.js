@@ -20,8 +20,22 @@ class Mesh extends React.Component {
         };
         socket.onmessage = (event) => {
             var data = MeshAPI.MeshPacketContent.parse(event.data);
-            if(data instanceof MeshAPI.MeshPacketContent)
-                this.setState({value: data.handle(this.state.value)});
+            if (data instanceof MeshAPI.FileDataChange)
+            {
+                if (!data.change || data.change === data.setChange(this.state.value))
+                {
+                    this.setState({value: data.handle(this.state.value)});
+                }
+                else
+                {
+                    console.log("Sync error!");
+                    socket.send(new MeshAPI.SynchronizeData());
+                }
+            }
+            else if(data instanceof MeshAPI.SynchronizeData)
+            {
+                this.setState({value: data.handle()});
+            }
         };
         return socket;
     }
@@ -30,6 +44,7 @@ class Mesh extends React.Component {
         var length = event.target.textLength - this.state.value.length;
         var start = event.target.selectionStart - length;
         var inputEvent = new MeshAPI.FileDataChange(start, event.target.value.substr(start, length), length);
+        inputEvent.setChange(this.state.value);
         this.setState({value: event.target.value});
         this.socket.send(inputEvent);
     };

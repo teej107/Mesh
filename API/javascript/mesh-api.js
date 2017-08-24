@@ -8,6 +8,11 @@ const _packets = {};
 
 class MeshPacketContent {
 
+    constructor()
+    {
+        this.timestamp = Date.now();
+    }
+
     static registerPacket(id, factoryCallback)
     {
         let size = Object.keys(_packets).length;
@@ -27,6 +32,11 @@ class MeshPacketContent {
         return null;
     }
 
+    static getID()
+    {
+        return "MeshPacketContent";
+    }
+
     handle(obj)
     {
         throw 'Default implementation is not supported';
@@ -34,25 +44,49 @@ class MeshPacketContent {
 
     toString()
     {
-        return JSON.stringify(this, null, 2);
+        return JSON.stringify(this);
+    }
+}
+
+class SynchronizeData extends MeshPacketContent {
+    constructor(data) {
+        super();
+        this.id = SynchronizeData.getID();
+        this.data = data || null;
+    }
+
+    handle(str = "") {
+        return this.data ? this.data : str;
+    }
+
+    static getID()
+    {
+        return "SynchronizeData"
     }
 }
 
 class FileDataChange extends MeshPacketContent {
 
-    constructor(start, data, length)
+    constructor(start, data, length, change)
     {
         super();
         this.id = FileDataChange.getID();
         this.start = start;
         this.data = data;
         this.length = length;
+        this.change = change || 0;
+    }
+
+    setChange(str)
+    {
+        this.change = this.length < 0 ? "-" + str.substr(this.start + this.length, -this.length) : "+";
+        return this.change;
     }
 
     handle(str)
     {
         if (this.length < 0)
-            return str.substring(0, this.start + this.length);
+            return str.substring(0, this.start + this.length) + str.substring(this.start);
 
         return str.substring(0, this.start) + this.data + str.substring(this.start + this.data.length);
     }
@@ -63,16 +97,20 @@ class FileDataChange extends MeshPacketContent {
     }
 }
 
-MeshPacketContent.registerPacket(FileDataChange.getID(), (obj) => new FileDataChange(obj.start, obj.data, obj.length));
+MeshPacketContent.registerPacket(FileDataChange.getID(), (obj) => new FileDataChange(obj.start, obj.data, obj.length, obj.change));
+MeshPacketContent.registerPacket(SynchronizeData.getID(), (obj) => new SynchronizeData(obj.data));
 
 const lib = {
     FileDataChange: FileDataChange,
-    MeshPacketContent: MeshPacketContent
+    MeshPacketContent: MeshPacketContent,
+    SynchronizeData: SynchronizeData
 };
 
 exports.default = lib;
-exports.MeshPacketContent = MeshPacketContent;
-exports.FileDataChange = FileDataChange;
+for(var key in lib)
+{
+    exports[key] = lib[key];
+}
 
 if (module)
 {

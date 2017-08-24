@@ -36,23 +36,7 @@ function Put()
 
 }
 
-let text = "Sample Text!";
-
 function Ws()
 {
-    this.connect = new Endpoint('/:owner/:project',
-        (ws, req) => {
-            connectionManager.push(ws);
-            ws.send(new MeshAPI.FileDataChange(0, text, text.length).toString());
-            ws.on('message', (data) => {
-                data = MeshAPI.MeshPacketContent.parse(data);
-                if(data instanceof MeshAPI.MeshPacketContent)
-                {
-                    text = data.handle(text);
-                    console.log(text);
-                    data = data.toString();
-                    connectionManager.forEach((conn) => conn.send(data), ws);
-                }
-            });
-        });
+    this.connect = new Endpoint('/:owner/:project', (ws, req) => connectionManager.push(ws));
 }

@@ -17,6 +17,8 @@ var _packets = {};
 var MeshPacketContent = function () {
     function MeshPacketContent() {
         _classCallCheck(this, MeshPacketContent);
+
+        this.timestamp = Date.now();
     }
 
     _createClass(MeshPacketContent, [{
@@ -27,7 +29,7 @@ var MeshPacketContent = function () {
     }, {
         key: 'toString',
         value: function toString() {
-            return JSON.stringify(this, null, 2);
+            return JSON.stringify(this);
         }
     }], [{
         key: 'registerPacket',
@@ -48,30 +50,72 @@ var MeshPacketContent = function () {
 
             return null;
         }
+    }, {
+        key: 'getID',
+        value: function getID() {
+            return "MeshPacketContent";
+        }
     }]);
 
     return MeshPacketContent;
 }();
 
-var FileDataChange = function (_MeshPacketContent) {
-    _inherits(FileDataChange, _MeshPacketContent);
+var SynchronizeData = function (_MeshPacketContent) {
+    _inherits(SynchronizeData, _MeshPacketContent);
 
-    function FileDataChange(start, data, length) {
-        _classCallCheck(this, FileDataChange);
+    function SynchronizeData(data) {
+        _classCallCheck(this, SynchronizeData);
 
-        var _this = _possibleConstructorReturn(this, (FileDataChange.__proto__ || Object.getPrototypeOf(FileDataChange)).call(this));
+        var _this = _possibleConstructorReturn(this, (SynchronizeData.__proto__ || Object.getPrototypeOf(SynchronizeData)).call(this));
 
-        _this.id = FileDataChange.getID();
-        _this.start = start;
-        _this.data = data;
-        _this.length = length;
+        _this.id = SynchronizeData.getID();
+        _this.data = data || null;
         return _this;
     }
 
+    _createClass(SynchronizeData, [{
+        key: 'handle',
+        value: function handle() {
+            var str = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+
+            return this.data ? this.data : str;
+        }
+    }], [{
+        key: 'getID',
+        value: function getID() {
+            return "SynchronizeData";
+        }
+    }]);
+
+    return SynchronizeData;
+}(MeshPacketContent);
+
+var FileDataChange = function (_MeshPacketContent2) {
+    _inherits(FileDataChange, _MeshPacketContent2);
+
+    function FileDataChange(start, data, length, change) {
+        _classCallCheck(this, FileDataChange);
+
+        var _this2 = _possibleConstructorReturn(this, (FileDataChange.__proto__ || Object.getPrototypeOf(FileDataChange)).call(this));
+
+        _this2.id = FileDataChange.getID();
+        _this2.start = start;
+        _this2.data = data;
+        _this2.length = length;
+        _this2.change = change || 0;
+        return _this2;
+    }
+
     _createClass(FileDataChange, [{
+        key: 'setChange',
+        value: function setChange(str) {
+            this.change = this.length < 0 ? "-" + str.substr(this.start + this.length, -this.length) : "+";
+            return this.change;
+        }
+    }, {
         key: 'handle',
         value: function handle(str) {
-            if (this.length < 0) return str.substring(0, this.start + this.length);
+            if (this.length < 0) return str.substring(0, this.start + this.length) + str.substring(this.start);
 
             return str.substring(0, this.start) + this.data + str.substring(this.start + this.data.length);
         }
@@ -86,17 +130,22 @@ var FileDataChange = function (_MeshPacketContent) {
 }(MeshPacketContent);
 
 MeshPacketContent.registerPacket(FileDataChange.getID(), function (obj) {
-    return new FileDataChange(obj.start, obj.data, obj.length);
+    return new FileDataChange(obj.start, obj.data, obj.length, obj.change);
+});
+MeshPacketContent.registerPacket(SynchronizeData.getID(), function (obj) {
+    return new SynchronizeData(obj.data);
 });
 
 var lib = {
     FileDataChange: FileDataChange,
-    MeshPacketContent: MeshPacketContent
+    MeshPacketContent: MeshPacketContent,
+    SynchronizeData: SynchronizeData
 };
 
 exports.default = lib;
-exports.MeshPacketContent = MeshPacketContent;
-exports.FileDataChange = FileDataChange;
+for (var key in lib) {
+    exports[key] = lib[key];
+}
 
 if (module) {
     var descriptor = Object.getOwnPropertyDescriptor(module, 'exports');
