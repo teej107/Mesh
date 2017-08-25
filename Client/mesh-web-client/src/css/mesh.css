@@ -1,5 +1,19 @@
 #mesh-textarea
 {
-    width: 90%;
-    max-width: 100%;
+    width: 100%;
+    height: 100%;
+}
+
+#mesh-textarea textarea
+{
+    width: 100%;
+    height: 100%;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+#mesh-textarea
+{
+    width: 100%;
+    height: 100%
 }

@@ -56,8 +56,10 @@ class Mesh extends React.Component {
     render()
     {
         return (
-            <div>
-                <textarea id="mesh-textarea" value={this.state.value} onChange={this.onInput}/>
+            <div id="mesh-divider">
+                <div id="mesh-textarea">
+                    <textarea value={this.state.value} onChange={this.onInput}/>
+                </div>
                 <button onClick={this.reload}>Reload</button>
             </div>
         );
