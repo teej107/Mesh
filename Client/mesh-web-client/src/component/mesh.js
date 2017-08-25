@@ -32,7 +32,7 @@ class Mesh extends React.Component {
                     socket.send(new MeshAPI.SynchronizeData());
                 }
             }
-            else if(data instanceof MeshAPI.SynchronizeData)
+            else if (data instanceof MeshAPI.SynchronizeData)
             {
                 this.setState({value: data.handle()});
             }
@@ -49,9 +49,18 @@ class Mesh extends React.Component {
         this.socket.send(inputEvent);
     };
 
+    reload = () => {
+        this.socket.send(new MeshAPI.SynchronizeData());
+    };
+
     render()
     {
-        return <textarea id="mesh-textarea" value={this.state.value} onChange={this.onInput}/>
+        return (
+            <div>
+                <textarea id="mesh-textarea" value={this.state.value} onChange={this.onInput}/>
+                <button onClick={this.reload}>Reload</button>
+            </div>
+        );
     }
 }
 

@@ -1,1 +1,1 @@
-module.exports = require('./mesh-api-es5');
+module.exports = require('./bin/mesh-api');

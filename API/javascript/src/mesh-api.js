@@ -49,13 +49,15 @@ class MeshPacketContent {
 }
 
 class SynchronizeData extends MeshPacketContent {
-    constructor(data) {
+    constructor(data)
+    {
         super();
         this.id = SynchronizeData.getID();
         this.data = data || null;
     }
 
-    handle(str = "") {
+    handle(str = "")
+    {
         return this.data ? this.data : str;
     }
 
@@ -85,10 +87,13 @@ class FileDataChange extends MeshPacketContent {
 
     handle(str)
     {
+        var charArray = str.split('');
         if (this.length < 0)
-            return str.substring(0, this.start + this.length) + str.substring(this.start);
+            charArray.splice(this.start + this.length, -this.length);
+        else
+            charArray.splice(this.start, 0, this.data);
 
-        return str.substring(0, this.start) + this.data + str.substring(this.start + this.data.length);
+        return charArray.join('');
     }
 
     static getID()
@@ -107,7 +112,7 @@ const lib = {
 };
 
 exports.default = lib;
-for(var key in lib)
+for (var key in lib)
 {
     exports[key] = lib[key];
 }

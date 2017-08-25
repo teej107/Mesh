@@ -115,9 +115,10 @@ var FileDataChange = function (_MeshPacketContent2) {
     }, {
         key: 'handle',
         value: function handle(str) {
-            if (this.length < 0) return str.substring(0, this.start + this.length) + str.substring(this.start);
+            var charArray = str.split('');
+            if (this.length < 0) charArray.splice(this.start + this.length, -this.length);else charArray.splice(this.start, 0, this.data);
 
-            return str.substring(0, this.start) + this.data + str.substring(this.start + this.data.length);
+            return charArray.join('');
         }
     }], [{
         key: 'getID',

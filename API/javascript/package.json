@@ -4,7 +4,7 @@
   "description": "API for Mesh",
   "main": "index.js",
   "scripts": {
-    "babel-watch": "babel mesh-api.js -w -o mesh-api-es5.js"
+    "babel-watch": "babel src -d bin"
   },
   "author": "Tanner Norton",
   "license": "ISC",
