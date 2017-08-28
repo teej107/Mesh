@@ -53,7 +53,7 @@ class SynchronizeData extends MeshPacketContent {
     {
         super();
         this.id = SynchronizeData.getID();
-        this.data = data || null;
+        this.data = (data && typeof data === 'object'? data.data : data) || null;
     }
 
     handle(str = "")
@@ -69,20 +69,16 @@ class SynchronizeData extends MeshPacketContent {
 
 class FileDataChange extends MeshPacketContent {
 
-    constructor(start, data, length, change)
+    constructor(start, data, length, totalLength)
     {
         super();
         this.id = FileDataChange.getID();
-        this.start = start;
-        this.data = data;
-        this.length = length;
-        this.change = change || 0;
-    }
 
-    setChange(str)
-    {
-        this.change = this.length < 0 ? "-" + str.substr(this.start + this.length, -this.length) : "+";
-        return this.change;
+        const isObj = typeof start === 'object';
+        this.start = isObj ? start.start : start;
+        this.data = isObj ? start.data : data;
+        this.length = isObj ? start.length : length;
+        this.totalLength = isObj ? start.totalLength : totalLength;
     }
 
     handle(str)
@@ -102,8 +98,8 @@ class FileDataChange extends MeshPacketContent {
     }
 }
 
-MeshPacketContent.registerPacket(FileDataChange.getID(), (obj) => new FileDataChange(obj.start, obj.data, obj.length, obj.change));
-MeshPacketContent.registerPacket(SynchronizeData.getID(), (obj) => new SynchronizeData(obj.data));
+MeshPacketContent.registerPacket(FileDataChange.getID(), (obj) => new FileDataChange(obj));
+MeshPacketContent.registerPacket(SynchronizeData.getID(), (obj) => new SynchronizeData(obj));
 
 const lib = {
     FileDataChange: FileDataChange,

@@ -1,5 +1,7 @@
 "use strict";
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -69,7 +71,7 @@ var SynchronizeData = function (_MeshPacketContent) {
         var _this = _possibleConstructorReturn(this, (SynchronizeData.__proto__ || Object.getPrototypeOf(SynchronizeData)).call(this));
 
         _this.id = SynchronizeData.getID();
-        _this.data = data || null;
+        _this.data = (data && (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' ? data.data : data) || null;
         return _this;
     }
 
@@ -93,26 +95,22 @@ var SynchronizeData = function (_MeshPacketContent) {
 var FileDataChange = function (_MeshPacketContent2) {
     _inherits(FileDataChange, _MeshPacketContent2);
 
-    function FileDataChange(start, data, length, change) {
+    function FileDataChange(start, data, length, totalLength) {
         _classCallCheck(this, FileDataChange);
 
         var _this2 = _possibleConstructorReturn(this, (FileDataChange.__proto__ || Object.getPrototypeOf(FileDataChange)).call(this));
 
         _this2.id = FileDataChange.getID();
-        _this2.start = start;
-        _this2.data = data;
-        _this2.length = length;
-        _this2.change = change || 0;
+
+        var isObj = (typeof start === 'undefined' ? 'undefined' : _typeof(start)) === 'object';
+        _this2.start = isObj ? start.start : start;
+        _this2.data = isObj ? start.data : data;
+        _this2.length = isObj ? start.length : length;
+        _this2.totalLength = isObj ? start.totalLength : totalLength;
         return _this2;
     }
 
     _createClass(FileDataChange, [{
-        key: 'setChange',
-        value: function setChange(str) {
-            this.change = this.length < 0 ? "-" + str.substr(this.start + this.length, -this.length) : "+";
-            return this.change;
-        }
-    }, {
         key: 'handle',
         value: function handle(str) {
             var charArray = str.split('');
@@ -131,10 +129,10 @@ var FileDataChange = function (_MeshPacketContent2) {
 }(MeshPacketContent);
 
 MeshPacketContent.registerPacket(FileDataChange.getID(), function (obj) {
-    return new FileDataChange(obj.start, obj.data, obj.length, obj.change);
+    return new FileDataChange(obj);
 });
 MeshPacketContent.registerPacket(SynchronizeData.getID(), function (obj) {
-    return new SynchronizeData(obj.data);
+    return new SynchronizeData(obj);
 });
 
 var lib = {

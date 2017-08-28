@@ -2,7 +2,7 @@ const MeshAPI = require('mesh-api');
 const uuid = require('uuid/v4');
 const WebSocket = require('ws');
 
-var text = 'Sample Text!';
+var text = "this is line 1 \nthis is line 2 ";
 
 class ConnectionManager {
 
@@ -14,7 +14,7 @@ class ConnectionManager {
             for (var key in connections)
             {
                 var connection = connections[key];
-                if (connection !== conn && connection.readyState  === WebSocket.OPEN)
+                if (connection !== conn && connection.readyState === WebSocket.OPEN)
                     callback(connection);
             }
         };
@@ -37,24 +37,23 @@ class ConnectionManager {
                 data = MeshAPI.MeshPacketContent.parse(data);
                 if (data instanceof MeshAPI.FileDataChange)
                 {
-                    if (!data.change || data.change === data.setChange(text))
+                    let mismatch = data.length + text.length !== data.totalLength;
+                    if (mismatch)
                     {
-                        text = data.handle(text);
-                        console.log(text);
-                        data = data.toString();
-                        this.forEach((conn) => conn.send(data), conn);
+                        console.log(conn.mesh.address);
+                        console.log("mismatch:", data.toString());
+                        console.log("server length:", text.length);
+
+                        //Further testing needed to assure accuracy
+                        data.start += text.length - data.totalLength + data.length;
                     }
-                    else
-                    {
-                        console.log('sending correct info');
-                        console.log(text);
-                        conn.send(new MeshAPI.SynchronizeData(text).toString());
-                    }
+                    text = data.handle(text);
+                    console.log(text + '\n');
+                    data = data.toString();
+                    this.forEach((conn) => conn.send(data), conn);
                 }
-                else if(data instanceof MeshAPI.SynchronizeData)
+                else if (data instanceof MeshAPI.SynchronizeData)
                 {
-                    console.log("syncing data");
-                    console.log(text);
                     conn.send(new MeshAPI.SynchronizeData(text).toString());
                 }
             });

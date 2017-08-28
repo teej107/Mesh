@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import '../css/mesh.css';
 import MeshAPI from 'mesh-api';
 
@@ -12,8 +11,7 @@ class Mesh extends React.Component {
         this.state = {value: ''};
     }
 
-    newSocket()
-    {
+    newSocket = () => {
         let socket = new WebSocket('ws://192.168.0.30:3000/api/teej/test');
         socket.onopen = (event) => {
             socket.onclose = (event) => this.socket = this.newSocket()
@@ -22,29 +20,28 @@ class Mesh extends React.Component {
             var data = MeshAPI.MeshPacketContent.parse(event.data);
             if (data instanceof MeshAPI.FileDataChange)
             {
-                if (!data.change || data.change === data.setChange(this.state.value))
-                {
-                    this.setState({value: data.handle(this.state.value)});
-                }
-                else
-                {
-                    console.log("Sync error!");
-                    socket.send(new MeshAPI.SynchronizeData());
-                }
+                const selectionStart = this.textarea.selectionStart;
+                const selectionEnd = this.textarea.selectionEnd;
+                const caretOffset = data.start > selectionStart ? 0 : 1;
+                this.setState({value: data.handle(this.state.value)});
+                this.textarea.setSelectionRange(selectionStart + caretOffset, selectionEnd + caretOffset);
             }
             else if (data instanceof MeshAPI.SynchronizeData)
             {
+                let selectionStart = this.textarea.selectionStart;
                 this.setState({value: data.handle()});
+                selectionStart = Math.min(this.state.value.length, selectionStart);
+                this.textarea.setSelectionRange(selectionStart, selectionStart);
             }
         };
         return socket;
-    }
+    };
 
     onInput = (event) => {
-        var length = event.target.textLength - this.state.value.length;
-        var start = event.target.selectionStart - length;
-        var inputEvent = new MeshAPI.FileDataChange(start, event.target.value.substr(start, length), length);
-        inputEvent.setChange(this.state.value);
+        const length = event.target.textLength - this.state.value.length;
+        const start = event.target.selectionStart - length;
+        const data = event.target.value.substr(start, length);
+        const inputEvent = new MeshAPI.FileDataChange(start, data, length, event.target.textLength);
         this.setState({value: event.target.value});
         this.socket.send(inputEvent);
     };
@@ -53,12 +50,11 @@ class Mesh extends React.Component {
         this.socket.send(new MeshAPI.SynchronizeData());
     };
 
-    render()
-    {
+    render = () => {
         return (
             <div id="mesh-divider">
                 <div id="mesh-textarea">
-                    <textarea value={this.state.value} onChange={this.onInput}/>
+                    <textarea ref={(ref) => this.textarea = ref} value={this.state.value} onChange={this.onInput}/>
                 </div>
                 <button onClick={this.reload}>Reload</button>
             </div>
