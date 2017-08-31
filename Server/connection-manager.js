@@ -2,14 +2,14 @@ const MeshAPI = require('mesh-api');
 const uuid = require('uuid/v4');
 const WebSocket = require('ws');
 
-var text = "this is line 1 \nthis is line 2 ";
-
 class ConnectionManager {
 
     constructor()
     {
-        var connections = {};
-        var th = this;
+        let text = "this is line 1 \nthis is line 2 ";
+        let fileDataChangeHistory = [];
+        let connections = {};
+
         this.forEach = (callback, conn) => {
             for (var key in connections)
             {
@@ -35,22 +35,39 @@ class ConnectionManager {
             });
             conn.on('message', (data) => {
                 data = MeshAPI.MeshPacketContent.parse(data);
+                data.timestamp = Date.now();
                 if (data instanceof MeshAPI.FileDataChange)
                 {
                     let mismatch = data.length + text.length !== data.totalLength;
                     if (mismatch)
                     {
-                        console.log(conn.mesh.address);
-                        console.log("mismatch:", data.toString());
+                        console.log(conn.mesh.address, 'mismatch', data.toString());
                         console.log("server length:", text.length);
 
-                        //Further testing needed to assure accuracy
-                        data.start += text.length - data.totalLength + data.length;
+                        //TODO: Further testing needed to assure accuracy
+                        /*
+                            Compare last "non-own" packet start, modify if packet start is before data.start
+                         */
+                        let dataPacket;
+                        for(let i = 0; i < fileDataChangeHistory.length; i++) {
+                            let packet = fileDataChangeHistory[i];
+                            if(packet.uuid === conn.mesh.id)
+                            {
+                                dataPacket = fileDataChangeHistory[i - 1];
+                                break;
+                            }
+                        }
+                        if(dataPacket && dataPacket.start < data.start)
+                        {
+                            data.start += text.length - data.totalLength + data.length;
+                        }
                     }
+                    fileDataChangeHistory.unshift(data);
                     text = data.handle(text);
                     console.log(text + '\n');
                     data = data.toString();
                     this.forEach((conn) => conn.send(data), conn);
+                    data.uuid = conn.mesh.id;
                 }
                 else if (data instanceof MeshAPI.SynchronizeData)
                 {

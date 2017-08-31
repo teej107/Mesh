@@ -8,11 +8,6 @@ const _packets = {};
 
 class MeshPacketContent {
 
-    constructor()
-    {
-        this.timestamp = Date.now();
-    }
-
     static registerPacket(id, factoryCallback)
     {
         let size = Object.keys(_packets).length;
