@@ -35,7 +35,6 @@ class ConnectionManager {
             });
             conn.on('message', (data) => {
                 data = MeshAPI.MeshPacketContent.parse(data);
-                data.timestamp = Date.now();
                 if (data instanceof MeshAPI.FileDataChange)
                 {
                     let mismatch = data.length + text.length !== data.totalLength;
@@ -65,8 +64,8 @@ class ConnectionManager {
                     fileDataChangeHistory.unshift(data);
                     text = data.handle(text);
                     console.log(text + '\n');
-                    data = data.toString();
-                    this.forEach((conn) => conn.send(data), conn);
+                    let serialized = data.toString();
+                    this.forEach((conn) => conn.send(serialized), conn);
                     data.uuid = conn.mesh.id;
                 }
                 else if (data instanceof MeshAPI.SynchronizeData)

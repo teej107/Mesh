@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Mesh from './component/mesh';
-import './css/index.css';
+import HighlightTextArea from './component/highlight-textarea';
 
-ReactDOM.render(<Mesh/>, document.getElementById('root'));
+ReactDOM.render(<HighlightTextArea/>, document.getElementById('root'));
